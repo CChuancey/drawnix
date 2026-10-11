@@ -7,6 +7,7 @@ import { ShareDialog } from '../components/share-dialog';
 import { getBoard, saveBoard } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { LAST_BOARD_KEY } from '../lib/config';
+import { connectBoardRoom, type RealtimeStatus } from '../lib/realtime';
 import {
   LOCAL_BOARD_ID,
   loadLocalBoard,
@@ -33,6 +34,9 @@ export function BoardPage() {
   const [canvasKey, setCanvasKey] = useState(0);
   const [shareOpen, setShareOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  /** 对方有新版本、但本地还有未保存改动时暂存，等用户决定 */
+  const [remotePending, setRemotePending] = useState<number | null>(null);
+  const [rtStatus, setRtStatus] = useState<RealtimeStatus>('connecting');
   /** 服务端当前版本，加载完成后初始化 useAutoSave */
   const [serverVersion, setServerVersion] = useState(0);
   const conflictRef = useRef<Board | null>(null);
@@ -60,6 +64,8 @@ export function BoardPage() {
     acceptServerVersion,
     overwrite,
     syncVersion,
+    currentVersion,
+    hasPending,
   } = useAutoSave({ initialVersion: serverVersion, save: saveFn });
 
   conflictRef.current = conflictBoard;
@@ -116,6 +122,43 @@ export function BoardPage() {
       cancelled = true;
     };
   }, [isLocal]);
+
+  /** 从服务端重新拉取并整块替换画布 */
+  const loadFromServer = useCallback(async () => {
+    const res = await getBoard(id);
+    const parsed = parseSnapshot(res.board.content) ?? { children: [] };
+    setValue(parsed);
+    setTitle(res.board.title);
+    setPermission(res.permission);
+    syncVersion(res.board.content_version);
+    setRemotePending(null);
+    setTutorial(parsed.children.length === 0);
+    setCanvasKey((n) => n + 1);
+  }, [id, syncVersion]);
+
+  // 实时同步：WebSocket 优先，断开自动退回 2 秒轮询
+  const remoteHandlerRef = useRef<(version: number) => void>(() => undefined);
+  remoteHandlerRef.current = (version: number) => {
+    if (hasPending()) {
+      setRemotePending(version);
+      return;
+    }
+    loadFromServer()
+      .then(() => setToast('已同步对方的最新改动'))
+      .catch(() => undefined);
+  };
+
+  useEffect(() => {
+    if (isLocal || !loaded || !user) return;
+    const disconnect = connectBoardRoom({
+      boardId: id,
+      getCurrentVersion: currentVersion,
+      hasPending,
+      onUpdate: (version) => remoteHandlerRef.current(version),
+      onStatus: setRtStatus,
+    });
+    return disconnect;
+  }, [id, isLocal, loaded, user, currentVersion, hasPending]);
 
   // 离开页面前把待保存内容提交掉
   useEffect(() => {
@@ -174,6 +217,9 @@ export function BoardPage() {
     () => (
       <>
         <SaveHint state={state} error={saveError} />
+        {!isLocal && rtStatus === 'polling' && (
+          <span className="sb-save-hint">轮询同步中</span>
+        )}
         {!isLocal && permission === 'owner' && (
           <button className="sb-btn" onClick={() => setShareOpen(true)}>
             分享
@@ -191,7 +237,7 @@ export function BoardPage() {
         )}
       </>
     ),
-    [state, saveError, isLocal, permission]
+    [state, saveError, isLocal, permission, rtStatus]
   );
 
   if (!isLocal && (loading || !user || !loaded)) {
@@ -248,6 +294,30 @@ export function BoardPage() {
           onLoadLatest={handleLoadLatest}
           onOverwrite={handleOverwrite}
         />
+      )}
+
+      {remotePending !== null && !conflictBoard && (
+        <div className="sb-banner sb-banner--info">
+          <span>对方刚更新了这个画板，而你本地还有未保存的改动。</span>
+          <div className="sb-banner__actions">
+            <button
+              className="sb-btn sb-btn--sm"
+              onClick={() => setRemotePending(null)}
+            >
+              稍后
+            </button>
+            <button
+              className="sb-btn sb-btn--sm sb-btn--primary"
+              onClick={() => {
+                loadFromServer()
+                  .then(() => setToast('已加载对方的最新版本'))
+                  .catch(() => setToast('加载失败'));
+              }}
+            >
+              加载对方版本
+            </button>
+          </div>
+        </div>
       )}
 
       <div className="sb-canvas-slot">
