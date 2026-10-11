@@ -34,6 +34,7 @@
     "open-color": "^1.9.1",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-router-dom": "^7.18.4",
     "roughjs": "^4.6.6",
     "slate": "^0.116.0",
     "slate-dom": "^0.116.0",
