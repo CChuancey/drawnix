@@ -6,6 +6,12 @@ export const API_BASE =
 /** 登录邮箱域名后缀（与后端 ALLOWED_EMAIL_DOMAIN 保持一致） */
 export const EMAIL_DOMAIN = '@214599.xyz';
 
+/** 收验证码的地方：214599.xyz 的邮箱系统（验证码会被投递到对应地址的收件箱） */
+export const MAIL_INBOX_URL = 'https://tmp-mail.214599.xyz';
+
+/** 密码长度下限（与后端 passwordProblem 保持一致） */
+export const MIN_PASSWORD_LENGTH = 8;
+
 /** 编辑后多久自动保存（毫秒） */
 export const SAVE_DEBOUNCE_MS = 1000;
 

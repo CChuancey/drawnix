@@ -405,6 +405,22 @@ body {
     line-height: 1.6;
 }
 
+/* 提示：验证码去哪看 */
+.sb-login__hint {
+    margin: -6px 0 16px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--sb-text-weak);
+    background: var(--sb-primary-light);
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+
+.sb-login__hint a {
+    color: var(--sb-primary-darker);
+    word-break: break-all;
+}
+
 .sb-field {
     display: flex;
     flex-direction: column;

@@ -72,10 +72,18 @@ export const requestLoginCode = (email: string) =>
     body: JSON.stringify({ email }),
   });
 
-export const verifyLoginCode = (email: string, code: string) =>
-  apiFetch<{ user: User }>('/auth/verify-code', {
+/** 首次登录：验证码 + 设置密码；忘记密码：验证码 + 新密码 */
+export const verifyLoginCode = (email: string, code: string, password: string) =>
+  apiFetch<{ user: User; password_set: boolean }>('/auth/verify-code', {
     method: 'POST',
-    body: JSON.stringify({ email, code }),
+    body: JSON.stringify({ email, code, password }),
+  });
+
+/** 日常登录：邮箱 + 密码 */
+export const loginWithPassword = (email: string, password: string) =>
+  apiFetch<{ user: User }>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
   });
 
 export const fetchMe = () => apiFetch<{ user: User }>('/auth/me');
