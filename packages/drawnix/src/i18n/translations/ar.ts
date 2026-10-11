@@ -86,7 +86,7 @@ const arTranslations: Translations = {
     "menu.github": "غيت هب",
 
     // Dialog translations
-    "dialog.mermaid.title": "من Mermaid إلى Drawnix",
+    "dialog.mermaid.title": "من Mermaid إلى whiteboard",
     "dialog.mermaid.description": "يدعم حاليًا",
     "dialog.mermaid.flowchart": "المخططات الانسيابية",
     "dialog.mermaid.sequence": "مخططات التسلسل",
@@ -104,8 +104,8 @@ const arTranslations: Translations = {
     "dialog.error.loadMermaid": "فشل في تحميل مكتبة Mermaid",
 
     // Extra tools menu items
-    "extraTools.mermaidToDrawnix": "من Mermaid إلى Drawnix",
-    "extraTools.markdownToDrawnix": "من Markdown إلى Drawnix",
+    "extraTools.mermaidToDrawnix": "من Mermaid إلى whiteboard",
+    "extraTools.markdownToDrawnix": "من Markdown إلى whiteboard",
 
     // Clean confirm dialog
     "cleanConfirm.title": "مسح اللوحة",
@@ -168,7 +168,7 @@ const arTranslations: Translations = {
     "mind.centralText": "الموضوع المركزي",
     "mind.abstractNodeText": "ملخص",
     
-    'tutorial.title': 'Drawnix',
+    'tutorial.title': 'SharedBoard',
     'tutorial.description': 'سبورة شاملة تتضمن الخرائط الذهنية والمخططات الانسيابية والرسم الحر وغير ذلك',
     'tutorial.dataDescription': 'تُحفظ جميع البيانات محليًا في متصفحك',
     'tutorial.appToolbar': 'تصدير، إعدادات اللغة، ...',

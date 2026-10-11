@@ -10,4 +10,4 @@ content: |-
   Disallow: /private/
   
   # 站点地图
-  Sitemap: https://drawnix.com/sitemap.xml
+  Sitemap: https://draw.214599.xyz/sitemap.xml

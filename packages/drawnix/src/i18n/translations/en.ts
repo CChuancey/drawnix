@@ -85,7 +85,7 @@ const enTranslations: Translations = {
   'menu.github': 'GitHub',
 
   // Dialog translations
-  'dialog.mermaid.title': 'Mermaid to Drawnix',
+  'dialog.mermaid.title': 'Mermaid to whiteboard',
   'dialog.mermaid.description': 'Currently supports',
   'dialog.mermaid.flowchart': 'flowcharts',
   'dialog.mermaid.sequence': 'sequence diagrams',
@@ -105,7 +105,7 @@ const enTranslations: Translations = {
   'dialog.error.loadMermaid': 'Failed to load Mermaid library',
 
   // Extra tools menu items
-  'extraTools.mermaidToDrawnix': 'Mermaid to Drawnix',
+  'extraTools.mermaidToDrawnix': 'Mermaid to whiteboard',
   'extraTools.markdownToDrawnix': 'Markdown to Drawnix',
 
   // Clean confirm dialog
@@ -169,7 +169,7 @@ const enTranslations: Translations = {
   'mind.centralText': 'Central Topic',
   'mind.abstractNodeText': 'Summary',
 
-  'tutorial.title': 'Drawnix',
+  'tutorial.title': 'SharedBoard',
   'tutorial.description':
     'All-in-one whiteboard, including mind maps, flowcharts, free drawing, and more',
   'tutorial.dataDescription': 'All data is stored locally in your browser',

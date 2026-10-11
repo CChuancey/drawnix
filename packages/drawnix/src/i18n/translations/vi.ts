@@ -86,7 +86,7 @@ const viTranslations: Translations = {
     'menu.github': 'GitHub',
 
     // Dialog translations
-    'dialog.mermaid.title': 'Mermaid sang Drawnix',
+    'dialog.mermaid.title': 'Mermaid sang whiteboard',
     'dialog.mermaid.description': 'Hiện hỗ trợ',
     'dialog.mermaid.flowchart': 'lưu đồ',
     'dialog.mermaid.sequence': 'biểu đồ tuần tự',
@@ -106,7 +106,7 @@ const viTranslations: Translations = {
     'dialog.error.loadMermaid': 'Không thể tải thư viện Mermaid',
 
     // Extra tools menu items
-    'extraTools.mermaidToDrawnix': 'Mermaid sang Drawnix',
+    'extraTools.mermaidToDrawnix': 'Mermaid sang whiteboard',
     'extraTools.markdownToDrawnix': 'Markdown sang Drawnix',
 
     // Clean confirm dialog
@@ -170,7 +170,7 @@ const viTranslations: Translations = {
     'mind.centralText': 'Chủ đề trung tâm',
     'mind.abstractNodeText': 'Tóm tắt',
 
-    'tutorial.title': 'DPIT Draw MindMap',
+    'tutorial.title': 'SharedBoard',
     'tutorial.description': 'Bảng trắng tất cả trong một, bao gồm sơ đồ tư duy, lưu đồ, vẽ tự do và hơn thế nữa',
     'tutorial.dataDescription': 'Tất cả dữ liệu được lưu trữ cục bộ trong trình duyệt của bạn',
     'tutorial.appToolbar': 'Xuất, cài đặt ngôn ngữ, ...',
