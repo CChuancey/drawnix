@@ -4,6 +4,7 @@ import { AppHeader } from '../components/app-header';
 import { BoardCanvas } from '../components/board-canvas';
 import { ConflictBanner, SaveHint } from '../components/save-status';
 import { getSharedBoard, saveSharedBoard } from '../lib/api';
+import { connectBoardRoom, type RealtimeStatus } from '../lib/realtime';
 import { parseSnapshot, serialize } from '../lib/storage';
 import type { Board, BoardValue } from '../lib/types';
 import { useAutoSave } from '../lib/use-auto-save';
@@ -12,6 +13,8 @@ import { useAutoSave } from '../lib/use-auto-save';
 export function SharePage() {
   const { token = '' } = useParams();
   const [value, setValue] = useState<BoardValue>({ children: [] });
+  /** 订阅实时更新需要画板 id（由 token 换取） */
+  const [boardId, setBoardId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [permission, setPermission] = useState<'read' | 'write'>('read');
@@ -19,6 +22,8 @@ export function SharePage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [tutorial, setTutorial] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [remotePending, setRemotePending] = useState<number | null>(null);
+  const [rtStatus, setRtStatus] = useState<RealtimeStatus>('connecting');
   const conflictRef = useRef<Board | null>(null);
 
   const readOnly = permission === 'read';
@@ -40,6 +45,8 @@ export function SharePage() {
     acceptServerVersion,
     overwrite,
     syncVersion,
+    currentVersion,
+    hasPending,
   } = useAutoSave({ initialVersion: 0, save: saveFn });
 
   conflictRef.current = conflictBoard;
@@ -52,6 +59,7 @@ export function SharePage() {
         if (cancelled) return;
         const parsed = parseSnapshot(res.board.content) ?? { children: [] };
         setValue(parsed);
+        setBoardId(res.board.id);
         setTitle(res.board.title);
         setPermission(res.permission);
         setOwnerEmail(res.owner_email);
@@ -69,6 +77,42 @@ export function SharePage() {
       cancelled = true;
     };
   }, [token, syncVersion]);
+
+  /** 从服务端重新拉取并整块替换画布 */
+  const loadFromServer = useCallback(async () => {
+    const res = await getSharedBoard(token);
+    const parsed = parseSnapshot(res.board.content) ?? { children: [] };
+    setValue(parsed);
+    setTitle(res.board.title);
+    setPermission(res.permission);
+    syncVersion(res.board.content_version);
+    setRemotePending(null);
+    setTutorial(parsed.children.length === 0);
+  }, [token, syncVersion]);
+
+  // 实时同步：朋友改了画板，这里秒级能看到
+  const remoteHandlerRef = useRef<(version: number) => void>(() => undefined);
+  remoteHandlerRef.current = (version: number) => {
+    if (hasPending()) {
+      setRemotePending(version);
+      return;
+    }
+    loadFromServer()
+      .then(() => setToast('已同步对方的最新改动'))
+      .catch(() => undefined);
+  };
+
+  useEffect(() => {
+    if (!loaded || !boardId) return;
+    return connectBoardRoom({
+      boardId,
+      shareToken: token,
+      getCurrentVersion: currentVersion,
+      hasPending,
+      onUpdate: (version) => remoteHandlerRef.current(version),
+      onStatus: setRtStatus,
+    });
+  }, [loaded, boardId, token, currentVersion, hasPending]);
 
   useEffect(() => {
     return () => {
@@ -139,6 +183,7 @@ export function SharePage() {
             <span className="sb-tag sb-tag--muted">
               {readOnly ? '仅可查看' : '可编辑'}
             </span>
+            {rtStatus === 'polling' && <span className="sb-save-hint">轮询同步中</span>}
           </>
         }
       >
@@ -166,6 +211,30 @@ export function SharePage() {
           onLoadLatest={handleLoadLatest}
           onOverwrite={handleOverwrite}
         />
+      )}
+
+      {remotePending !== null && !conflictBoard && (
+        <div className="sb-banner sb-banner--info">
+          <span>画板刚被更新，而你本地还有未保存的改动。</span>
+          <div className="sb-banner__actions">
+            <button
+              className="sb-btn sb-btn--sm"
+              onClick={() => setRemotePending(null)}
+            >
+              稍后
+            </button>
+            <button
+              className="sb-btn sb-btn--sm sb-btn--primary"
+              onClick={() => {
+                loadFromServer()
+                  .then(() => setToast('已加载最新版本'))
+                  .catch(() => setToast('加载失败'));
+              }}
+            >
+              加载最新版本
+            </button>
+          </div>
+        </div>
       )}
 
       <div className="sb-canvas-slot">

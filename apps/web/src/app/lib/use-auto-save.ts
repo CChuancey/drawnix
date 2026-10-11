@@ -119,6 +119,13 @@ export function useAutoSave({ initialVersion, save }: Options) {
     versionRef.current = version;
   }, []);
 
+  // 稳定引用：供实时同步的连接副作用作依赖
+  const currentVersion = useCallback(() => versionRef.current, []);
+  const hasPending = useCallback(
+    () => pendingRef.current !== null || flushingRef.current,
+    []
+  );
+
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -135,5 +142,9 @@ export function useAutoSave({ initialVersion, save }: Options) {
     acceptServerVersion,
     overwrite,
     syncVersion,
+    /** 当前已知的服务端版本号（实时同步用来比较新旧） */
+    currentVersion,
+    /** 是否有尚未落库的本地改动 */
+    hasPending,
   };
 }

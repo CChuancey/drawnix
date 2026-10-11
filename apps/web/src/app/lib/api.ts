@@ -1,4 +1,5 @@
 import { API_BASE } from './config';
+import { getClientId } from './realtime';
 import type {
   Board,
   BoardMeta,
@@ -104,6 +105,8 @@ export const saveBoard = (
   apiFetch<{ board: Board }>(`/boards/${id}`, {
     method: 'PUT',
     body: JSON.stringify(payload),
+    // 后端广播变更时回传，用来让发起方忽略自己的消息
+    headers: { 'X-Client-Id': getClientId() },
   });
 
 export const deleteBoard = (id: string) =>
@@ -159,4 +162,5 @@ export const saveSharedBoard = (
   apiFetch<{ board: Board }>(`/share/${token}`, {
     method: 'PUT',
     body: JSON.stringify(payload),
+    headers: { 'X-Client-Id': getClientId() },
   });
