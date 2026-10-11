@@ -95,7 +95,7 @@ const ruTranslations: Translations = {
   'menu.github': 'GitHub',
 
   // Dialog translations
-  'dialog.mermaid.title': 'Mermaid в Drawnix',
+  'dialog.mermaid.title': 'Mermaid в whiteboard',
   'dialog.mermaid.description': 'Поддерживаются',
   'dialog.mermaid.flowchart': 'блок-схемы',
   'dialog.mermaid.sequence': 'диаграммы последовательностей',
@@ -114,8 +114,8 @@ const ruTranslations: Translations = {
   'dialog.error.loadMermaid': 'Не удалось загрузить библотеку Mermaid',
 
   // Extra tools menu items
-  'extraTools.mermaidToDrawnix': 'Mermaid в Drawnix',
-  'extraTools.markdownToDrawnix': 'Markdown в Drawnix',
+  'extraTools.mermaidToDrawnix': 'Mermaid в whiteboard',
+  'extraTools.markdownToDrawnix': 'Markdown в whiteboard',
 
   // Clean confirm dialog
   'cleanConfirm.title': 'Очистить доску',
@@ -178,7 +178,7 @@ const ruTranslations: Translations = {
   'mind.centralText': 'Центральная тема',
   'mind.abstractNodeText': 'Резюме',
 
-  'tutorial.title': 'Drawnix',
+  'tutorial.title': 'SharedBoard',
   'tutorial.description':
     'Универсальная доска: майнд-карты, блок-схемы, свободное рисование и многое другое',
   'tutorial.dataDescription': 'Все данные хранятся локально в вашем браузере',

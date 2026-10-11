@@ -95,12 +95,12 @@ const zhTranslations: Translations = {
   'menu.github': 'GitHub',
 
   // Dialog translations
-  'dialog.mermaid.title': 'Mermaid 转 Drawnix',
+  'dialog.mermaid.title': 'Mermaid 转共享白板',
   'dialog.mermaid.description': '目前仅支持',
   'dialog.mermaid.flowchart': '流程图',
   'dialog.mermaid.sequence': '序列图',
   'dialog.mermaid.class': '类图',
-  'dialog.mermaid.otherTypes': '。其他类型在 Drawnix 中将以图片呈现。',
+  'dialog.mermaid.otherTypes': '。其他类型在 共享白板 中将以图片呈现。',
   'dialog.mermaid.syntax': 'Mermaid 语法',
   'dialog.mermaid.placeholder': '在此处编写 Mermaid 图表定义…',
   'dialog.mermaid.preview': '预览',
@@ -113,8 +113,8 @@ const zhTranslations: Translations = {
   'dialog.error.loadMermaid': '加载 Mermaid 库失败',
 
   // Extra tools menu items
-  'extraTools.mermaidToDrawnix': 'Mermaid 到 Drawnix',
-  'extraTools.markdownToDrawnix': 'Markdown 到 Drawnix',
+  'extraTools.mermaidToDrawnix': 'Mermaid 转白板',
+  'extraTools.markdownToDrawnix': 'Markdown 转白板',
 
   // Clean confirm dialog
   'cleanConfirm.title': '清除画布',
@@ -177,8 +177,8 @@ const zhTranslations: Translations = {
 
   #### 哇 是个程序员 🤯 ⌨️ 💡 👩 💻`,
 
-  'tutorial.title': 'Drawnix',
-  'tutorial.description': 'All-in-one 白板，包含思维导图、流程图、自由画笔等',
+  'tutorial.title': '共享白板',
+  'tutorial.description': '一体化白板，包含思维导图、流程图、自由画笔等，支持云端保存与分享',
   'tutorial.dataDescription': '所有数据被存在你的浏览器本地',
   'tutorial.appToolbar': '导出，语言设置，...',
   'tutorial.creationToolbar': '选择一个工具开始你的创作',

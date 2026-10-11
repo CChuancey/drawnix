@@ -41,12 +41,12 @@
 
   --color-icon-white: #ffffff;
 
-  --color-primary: #6698ff;
-  --color-primary-darker: #4a7ee6;    // 降低亮度和饱和度
-  --color-primary-darkest: #3366cc;   // 进一步降低亮度
-  --color-primary-light: #e6f0ff;     // 提高亮度，降低饱和度
-  --color-primary-light-darker: #cce0ff;  // light 的稍暗版本
-  --color-primary-hover: #80acff;     // 略微提高亮度的互动状态
+  --color-primary: #14b8a6;
+  --color-primary-darker: #0d9488;    // 降低亮度和饱和度
+  --color-primary-darkest: #0f766e;   // 进一步降低亮度
+  --color-primary-light: #ccfbf1;     // 提高亮度，降低饱和度
+  --color-primary-light-darker: #99f6e4;  // light 的稍暗版本
+  --color-primary-hover: #2dd4bf;     // 略微提高亮度的互动状态
 
   --button-hover-bg: var(--color-surface-high);
   --button-active-bg: var(--color-surface-high);
@@ -79,10 +79,10 @@
   --color-surface-low: hsl(220 25% 94%);
   --color-surface-lowest: #ffffff;
   --color-on-surface: #666666;
-  --color-brand-hover: #6698ff;
-  --color-on-primary-container: #6698ff;
-  --color-surface-primary-container: rgba(102, 152, 255, .1);
-  --color-brand-active: #6698ff;
+  --color-brand-hover: #14b8a6;
+  --color-on-primary-container: #14b8a6;
+  --color-surface-primary-container: rgba(20, 184, 166, .1);
+  --color-brand-active: #14b8a6;
   --color-border-outline: #767680;
   --color-border-outline-variant: #c5c5d0;
 
