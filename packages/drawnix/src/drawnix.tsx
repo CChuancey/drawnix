@@ -70,6 +70,8 @@ export type DrawnixProps = {
   onLanguageChange?: (language: Language) => void;
   afterInit?: (board: PlaitBoard) => void;
   tutorial?: boolean;
+  /** 只读模式：禁止选中与编辑（用于分享链接的"仅可查看"） */
+  readonly?: boolean;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export type { DrawnixToolState } from './hooks/use-drawnix';
@@ -101,9 +103,10 @@ export const Drawnix: React.FC<DrawnixProps> = ({
   onLanguageChange,
   afterInit,
   tutorial = false,
+  readonly = false,
 }) => {
   const options: PlaitBoardOptions = {
-    readonly: false,
+    readonly,
     hideScrollbar: true,
     disabledScrollOnNonFocus: false,
     themeColors: MindThemeColors,
@@ -258,15 +261,19 @@ export const Drawnix: React.FC<DrawnixProps> = ({
             >
               {tutorial && board && <Tutorial />}
             </Board>
-            <AppToolbar></AppToolbar>
-            <CreationToolbar></CreationToolbar>
+            {!readonly && (
+              <>
+                <AppToolbar></AppToolbar>
+                <CreationToolbar></CreationToolbar>
+                <ThemeToolbar></ThemeToolbar>
+                <PopupToolbar></PopupToolbar>
+                <LinkPopup></LinkPopup>
+                <ClosePencilToolbar></ClosePencilToolbar>
+                <TTDDialog container={containerRef.current}></TTDDialog>
+                <CleanConfirm container={containerRef.current}></CleanConfirm>
+              </>
+            )}
             <ZoomToolbar></ZoomToolbar>
-            <ThemeToolbar></ThemeToolbar>
-            <PopupToolbar></PopupToolbar>
-            <LinkPopup></LinkPopup>
-            <ClosePencilToolbar></ClosePencilToolbar>
-            <TTDDialog container={containerRef.current}></TTDDialog>
-            <CleanConfirm container={containerRef.current}></CleanConfirm>
             <Toast toast={toast} container={containerRef.current}></Toast>
           </Wrapper>
           <canvas className={`${LASER_POINTER_CLASS_NAME} mouse-course-hidden`}></canvas>
