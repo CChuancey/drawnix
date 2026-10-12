@@ -3,11 +3,14 @@ import { getClientId } from './realtime';
 import type {
   Board,
   BoardMeta,
+  BoardVersion,
   Collaborator,
   Permission,
   ShareLink,
   SharedBoardMeta,
   User,
+  UserSuggestion,
+  VersionDetail,
 } from './types';
 
 /** 后端返回的错误（含 HTTP 状态码与原始 body，409 冲突时需要读 body.board） */
@@ -155,6 +158,26 @@ export const removeCollaborator = (id: string, userId: string) =>
   apiFetch<{ ok: true }>(`/boards/${id}/collaborators/${userId}`, {
     method: 'DELETE',
   });
+
+/* ---------------------------- 账号补全 ---------------------------- */
+
+/** 按前缀补全账号名（输入 "chuan" → 提示 chuancey），只返回本站域名下的已注册账号 */
+export const lookupUsers = (q: string) =>
+  apiFetch<{ users: UserSuggestion[] }>(`/users/lookup?q=${encodeURIComponent(q)}`);
+
+/* ---------------------------- 历史版本 ---------------------------- */
+
+export const listVersions = (id: string) =>
+  apiFetch<{ versions: BoardVersion[] }>(`/boards/${id}/versions`);
+
+export const getVersion = (id: string, versionId: string) =>
+  apiFetch<{ version: VersionDetail }>(`/boards/${id}/versions/${versionId}`);
+
+export const restoreVersion = (id: string, versionId: string) =>
+  apiFetch<{ board: Board; restored_from: number }>(
+    `/boards/${id}/versions/${versionId}/restore`,
+    { method: 'POST', headers: { 'X-Client-Id': getClientId() } }
+  );
 
 /* --------------------------- 免登录分享访问 --------------------------- */
 

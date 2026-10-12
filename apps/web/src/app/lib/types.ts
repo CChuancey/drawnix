@@ -43,6 +43,37 @@ export interface ShareLink {
   url: string;
 }
 
+/** 画板的历史版本（列表项不含 content，预览时单独取） */
+export interface BoardVersion {
+  id: string;
+  title: string | null;
+  content_version: number;
+  editor_label: string | null;
+  created_at: string;
+  /** content 字符数，列表里显示大小 */
+  size: number;
+}
+
+export interface VersionDetail extends BoardVersion {
+  content: string;
+}
+
+/** 授权协作者时的邮箱补全结果 */
+export interface UserSuggestion {
+  id: string;
+  email: string;
+  display_name: string | null;
+  local_part: string;
+}
+
+/** 正在看同一个画板的人 */
+export interface PresenceUser {
+  name: string;
+  email: string | null;
+  cid: string;
+  editing: boolean;
+}
+
 /** Drawnix 画布值（与 @plait/react-board 的 BoardChangeData 对齐） */
 export interface BoardValue {
   children: PlaitElement[];
