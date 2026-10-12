@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   addCollaborator,
   createShareLink,
   listCollaborators,
   listShareLinks,
+  lookupUsers,
   removeCollaborator,
   revokeShareLink,
 } from '../lib/api';
 import { EMAIL_DOMAIN } from '../lib/config';
-import type { Collaborator, ShareLink } from '../lib/types';
+import type { Collaborator, ShareLink, UserSuggestion } from '../lib/types';
 
 interface Props {
   boardId: string;
@@ -24,10 +25,49 @@ export function ShareDialog({ boardId, onClose, onToast }: Props) {
   const [links, setLinks] = useState<ShareLink[]>([]);
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [linkPermission, setLinkPermission] = useState<LinkPermission>('read');
-  const [inviteEmail, setInviteEmail] = useState('');
+  /** 只填账号名部分，域名固定为 EMAIL_DOMAIN */
+  const [inviteLocal, setInviteLocal] = useState('');
   const [invitePermission, setInvitePermission] = useState<LinkPermission>('read');
+  const [suggestions, setSuggestions] = useState<UserSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const inviteBoxRef = useRef<HTMLDivElement>(null);
+
+  const inviteEmail = `${inviteLocal.trim().toLowerCase()}${EMAIL_DOMAIN}`;
+
+  /** 输入账号名前缀 → 提示站内已注册的账号（"打出账号名就可以提示"） */
+  useEffect(() => {
+    const q = inviteLocal.trim().toLowerCase();
+    if (q.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await lookupUsers(q);
+        if (!cancelled) setSuggestions(res.users);
+      } catch {
+        if (!cancelled) setSuggestions([]);
+      }
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [inviteLocal]);
+
+  // 点击别处收起提示
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (inviteBoxRef.current && !inviteBoxRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, []);
 
   const reload = useCallback(async () => {
     try {
@@ -92,24 +132,49 @@ export function ShareDialog({ boardId, onClose, onToast }: Props) {
   };
 
   const handleInvite = async () => {
-    const email = inviteEmail.trim().toLowerCase();
-    if (!email) return;
-    if (!email.endsWith(EMAIL_DOMAIN)) {
-      setError(`仅支持 ${EMAIL_DOMAIN} 邮箱`);
+    const local = inviteLocal.trim().toLowerCase();
+    if (!local) {
+      setError('请输入对方的账号名');
+      return;
+    }
+    if (!/^[a-z0-9][a-z0-9._-]*$/.test(local)) {
+      setError('账号名只能包含字母、数字、点、下划线和短横线');
       return;
     }
     setBusy(true);
     setError(null);
     try {
-      await addCollaborator(boardId, { email, permission: invitePermission });
-      setInviteEmail('');
+      await addCollaborator(boardId, {
+        email: `${local}${EMAIL_DOMAIN}`,
+        permission: invitePermission,
+      });
+      setInviteLocal('');
+      setSuggestions([]);
+      setShowSuggestions(false);
       await reload();
-      onToast(`已授权 ${email}`);
+      onToast(`已授权 ${local}${EMAIL_DOMAIN}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : '授权失败');
     } finally {
       setBusy(false);
     }
+  };
+
+  /** 输入框只收账号名；粘贴完整邮箱时自动去掉域名，域名不对就提示 */
+  const handleInviteInput = (raw: string) => {
+    setError(null);
+    setShowSuggestions(true);
+    if (!raw.includes('@')) {
+      setInviteLocal(raw);
+      return;
+    }
+    const [local, domain = ''] = raw.split('@');
+    const expected = EMAIL_DOMAIN.slice(1); // 214599.xyz
+    if (domain && !expected.startsWith(domain.toLowerCase())) {
+      setError(`只支持 ${EMAIL_DOMAIN} 邮箱，请只填账号名`);
+      return;
+    }
+    setInviteLocal(local);
   };
 
   const handleRemoveCollaborator = async (userId: string, email: string) => {
@@ -191,18 +256,59 @@ export function ShareDialog({ boardId, onClose, onToast }: Props) {
           <section className="sb-dialog__section">
             <h3 className="sb-dialog__section-title">授权指定用户</h3>
             <p className="sb-dialog__section-desc">
-              仅支持 {EMAIL_DOMAIN} 邮箱，且对方需要先登录过一次本应用。
+              只填账号名即可（域名固定为 {EMAIL_DOMAIN}），输入两个字就会提示站内已有的账号。
+              对方需要先登录过一次本应用。
             </p>
             <div className="sb-row">
-              <input
-                className="sb-input"
-                placeholder={`someone${EMAIL_DOMAIN}`}
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleInvite();
-                }}
-              />
+              <div className="sb-invite" ref={inviteBoxRef}>
+                <div className="sb-input-group">
+                  <input
+                    className="sb-input"
+                    placeholder="someone"
+                    value={inviteLocal}
+                    autoComplete="off"
+                    onChange={(e) => handleInviteInput(e.target.value)}
+                    onFocus={() => setShowSuggestions(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        if (suggestions.length > 0 && showSuggestions) {
+                          setInviteLocal(suggestions[0].local_part);
+                          setShowSuggestions(false);
+                          return;
+                        }
+                        handleInvite();
+                      }
+                      if (e.key === 'Escape') setShowSuggestions(false);
+                    }}
+                  />
+                  <span className="sb-input-suffix">{EMAIL_DOMAIN}</span>
+                </div>
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="sb-suggest">
+                    {suggestions.map((s) => (
+                      <button
+                        className="sb-suggest__item"
+                        key={s.id}
+                        onClick={() => {
+                          setInviteLocal(s.local_part);
+                          setSuggestions([]);
+                          setShowSuggestions(false);
+                        }}
+                      >
+                        <span className="sb-suggest__name">{s.local_part}</span>
+                        <span className="sb-suggest__mail">{EMAIL_DOMAIN}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {showSuggestions &&
+                  suggestions.length === 0 &&
+                  inviteLocal.trim().length >= 2 && (
+                    <div className="sb-suggest sb-suggest--empty">
+                      没有匹配的账号。对方需要先用邮箱登录一次本应用，才能被授权。
+                    </div>
+                  )}
+              </div>
               <select
                 className="sb-select"
                 value={invitePermission}
@@ -215,6 +321,9 @@ export function ShareDialog({ boardId, onClose, onToast }: Props) {
                 授权
               </button>
             </div>
+            <p className="sb-dialog__section-desc sb-invite__preview">
+              将要授权：{inviteLocal.trim() ? inviteEmail : '—'}
+            </p>
             {collaborators.length > 0 && (
               <div className="sb-list">
                 {collaborators.map((c) => (

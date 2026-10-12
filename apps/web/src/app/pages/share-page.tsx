@@ -2,11 +2,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AppHeader } from '../components/app-header';
 import { BoardCanvas } from '../components/board-canvas';
+import { PresenceBar } from '../components/presence-bar';
 import { ConflictBanner, SaveHint } from '../components/save-status';
 import { getSharedBoard, saveSharedBoard } from '../lib/api';
-import { connectBoardRoom, type RealtimeStatus } from '../lib/realtime';
+import {
+  connectBoardRoom,
+  type BoardRoomConnection,
+  type RealtimeStatus,
+} from '../lib/realtime';
 import { parseSnapshot, serialize } from '../lib/storage';
-import type { Board, BoardValue } from '../lib/types';
+import type { Board, BoardValue, PresenceUser } from '../lib/types';
 import { useAutoSave } from '../lib/use-auto-save';
 
 /** 凭分享链接打开画板（无需登录）：read 只读，write 可编辑并保存回原画板 */
@@ -24,7 +29,10 @@ export function SharePage() {
   const [toast, setToast] = useState<string | null>(null);
   const [remotePending, setRemotePending] = useState<number | null>(null);
   const [rtStatus, setRtStatus] = useState<RealtimeStatus>('connecting');
+  const [presence, setPresence] = useState<PresenceUser[]>([]);
+  const [editing, setEditing] = useState(false);
   const conflictRef = useRef<Board | null>(null);
+  const roomRef = useRef<BoardRoomConnection | null>(null);
 
   const readOnly = permission === 'read';
 
@@ -91,28 +99,46 @@ export function SharePage() {
   }, [token, syncVersion]);
 
   // 实时同步：朋友改了画板，这里秒级能看到
-  const remoteHandlerRef = useRef<(version: number) => void>(() => undefined);
-  remoteHandlerRef.current = (version: number) => {
+  const remoteHandlerRef = useRef<(version: number, byName?: string | null) => void>(
+    () => undefined
+  );
+  remoteHandlerRef.current = (version: number, byName?: string | null) => {
     if (hasPending()) {
       setRemotePending(version);
       return;
     }
+    const who = byName ? `${byName} ` : '对方';
     loadFromServer()
-      .then(() => setToast('已同步对方的最新改动'))
+      .then(() => setToast(`已同步${who}的最新改动`))
       .catch(() => undefined);
   };
 
   useEffect(() => {
     if (!loaded || !boardId) return;
-    return connectBoardRoom({
+    const conn = connectBoardRoom({
       boardId,
       shareToken: token,
       getCurrentVersion: currentVersion,
       hasPending,
-      onUpdate: (version) => remoteHandlerRef.current(version),
+      onUpdate: (version, byName) => remoteHandlerRef.current(version, byName),
+      onPresence: setPresence,
       onStatus: setRtStatus,
     });
+    roomRef.current = conn;
+    return () => {
+      conn.disconnect();
+      roomRef.current = null;
+    };
   }, [loaded, boardId, token, currentVersion, hasPending]);
+
+  // 我在这个画板上编辑时也告诉别人
+  useEffect(() => {
+    roomRef.current?.setEditing(editing && !readOnly);
+  }, [editing, readOnly, loaded]);
+
+  useEffect(() => {
+    if (state === 'saved' || state === 'error' || state === 'conflict') setEditing(false);
+  }, [state]);
 
   useEffect(() => {
     return () => {
@@ -130,7 +156,10 @@ export function SharePage() {
     (next: BoardValue) => {
       setValue(next);
       if (next.children.length > 0) setTutorial(false);
-      if (!readOnly) schedule(serialize(next));
+      if (!readOnly) {
+        setEditing(true);
+        schedule(serialize(next));
+      }
     },
     [readOnly, schedule]
   );
@@ -161,7 +190,7 @@ export function SharePage() {
   if (loadError) {
     return (
       <div className="sb-page">
-        <AppHeader homeLink={false} />
+        <AppHeader />
         <div className="sb-center-state">
           <div style={{ fontSize: 16, fontWeight: 600 }}>无法打开这个分享链接</div>
           <div>{loadError}</div>
@@ -176,9 +205,9 @@ export function SharePage() {
   return (
     <div className="sb-page">
       <AppHeader
-        homeLink={false}
         right={
           <>
+            <PresenceBar users={presence} selfEmail={null} />
             <SaveHint state={state} error={saveError} />
             <span className="sb-tag sb-tag--muted">
               {readOnly ? '仅可查看' : '可编辑'}
@@ -187,6 +216,9 @@ export function SharePage() {
           </>
         }
       >
+        <Link className="sb-btn sb-btn--ghost sb-btn--sm" to="/">
+          ← 共享白板首页
+        </Link>
         <span className="sb-title">{title || '共享画板'}</span>
       </AppHeader>
 

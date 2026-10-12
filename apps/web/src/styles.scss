@@ -711,3 +711,132 @@ body {
 .sb-share .drawnix .draw-toolbar {
     display: none !important;
 }
+
+/* --------------------------- 在线协作者（谁在编辑） --------------------------- */
+
+.sb-presence {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 340px;
+    overflow: hidden;
+}
+
+.sb-presence__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 8px;
+    font-size: 12px;
+    color: var(--sb-text-weak);
+    background: #f3f4f6;
+    border: 1px solid var(--sb-border);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.sb-presence__chip--editing {
+    color: var(--sb-primary-darker);
+    background: var(--sb-primary-lighter);
+    border-color: var(--sb-primary-light);
+}
+
+.sb-presence__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #9ca3af;
+}
+
+.sb-presence__chip--editing .sb-presence__dot {
+    background: var(--sb-primary);
+}
+
+/* --------------------------- 账号名补全 --------------------------- */
+
+.sb-invite {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+.sb-suggest {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 10;
+    max-height: 200px;
+    overflow: auto;
+    padding: 4px;
+    background: var(--sb-surface);
+    border: 1px solid var(--sb-border);
+    border-radius: 8px;
+    box-shadow: var(--sb-shadow);
+}
+
+.sb-suggest--empty {
+    padding: 10px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--sb-text-weak);
+}
+
+.sb-suggest__item {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    width: 100%;
+    padding: 7px 8px;
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    color: var(--sb-text);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.sb-suggest__item:hover {
+    background: var(--sb-primary-lighter);
+}
+
+.sb-suggest__name {
+    font-weight: 600;
+}
+
+.sb-suggest__mail {
+    font-size: 12px;
+    color: var(--sb-text-weak);
+}
+
+.sb-invite__preview {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: var(--sb-text-weak);
+}
+
+/* --------------------------- 历史版本 --------------------------- */
+
+.sb-history__meta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sb-history__time {
+    font-size: 13px;
+    color: var(--sb-text);
+}
+
+.sb-history__by {
+    font-size: 12px;
+    color: var(--sb-text-weak);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
