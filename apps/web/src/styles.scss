@@ -405,6 +405,14 @@ body {
     line-height: 1.6;
 }
 
+/* Turnstile 人机验证控件容器 */
+.sb-turnstile {
+    margin: 0 0 14px;
+    min-height: 65px;
+    display: flex;
+    justify-content: center;
+}
+
 /* 提示：验证码去哪看 */
 .sb-login__hint {
     margin: -6px 0 16px;

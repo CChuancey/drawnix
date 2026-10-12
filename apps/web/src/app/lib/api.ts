@@ -66,10 +66,10 @@ export async function apiFetch<T>(
 
 /* ------------------------------- 认证 ------------------------------- */
 
-export const requestLoginCode = (email: string) =>
+export const requestLoginCode = (email: string, turnstileToken = '') =>
   apiFetch<{ sent: true }>('/auth/request-code', {
     method: 'POST',
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, turnstileToken }),
   });
 
 /** 首次登录：验证码 + 设置密码；忘记密码：验证码 + 新密码 */

@@ -12,6 +12,15 @@ export const MAIL_INBOX_URL = 'https://tmp-mail.214599.xyz';
 /** 密码长度下限（与后端 passwordProblem 保持一致） */
 export const MIN_PASSWORD_LENGTH = 8;
 
+/** Turnstile 官方测试 sitekey（本地开发恒通过）；生产构建时用 VITE_TURNSTILE_SITEKEY 注入正式值 */
+const TURNSTILE_TEST_SITEKEY = '1x00000000000000000000AA';
+export const TURNSTILE_SITEKEY =
+  (import.meta.env.VITE_TURNSTILE_SITEKEY as string | undefined) ||
+  TURNSTILE_TEST_SITEKEY;
+/** 生产未配置正式 sitekey 前不渲染控件（后端此时也跳过校验），界面与今天一致 */
+export const TURNSTILE_ENABLED =
+  TURNSTILE_SITEKEY !== TURNSTILE_TEST_SITEKEY || !import.meta.env.PROD;
+
 /** 编辑后多久自动保存（毫秒） */
 export const SAVE_DEBOUNCE_MS = 1000;
 
