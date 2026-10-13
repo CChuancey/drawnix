@@ -6,7 +6,6 @@ import {
   EMAIL_DOMAIN,
   MAIL_INBOX_URL,
   MIN_PASSWORD_LENGTH,
-  TURNSTILE_ENABLED,
   TURNSTILE_SITEKEY,
 } from '../lib/config';
 
@@ -61,7 +60,7 @@ export function LoginPage() {
 
   // 验证码模式下按需加载 Turnstile 并渲染控件；随 step 变化重新挂到新容器
   useEffect(() => {
-    if (mode !== 'code' || !TURNSTILE_ENABLED) return;
+    if (mode !== 'code') return;
     let cancelled = false;
     const mount = () => {
       if (cancelled || !turnstileBoxRef.current || turnstileWidgetRef.current) return;
@@ -118,7 +117,7 @@ export function LoginPage() {
       setError('请输入邮箱前缀');
       return;
     }
-    if (TURNSTILE_ENABLED && !turnstileToken) {
+    if (!turnstileToken) {
       setError('人机验证还没完成，请稍候再试');
       return;
     }
@@ -255,9 +254,7 @@ export function LoginPage() {
                 （<a href={MAIL_INBOX_URL} target="_blank" rel="noreferrer">{MAIL_INBOX_URL.replace('https://', '')}</a>），
                 打开对应地址的收件箱即可看到。
               </p>
-              {TURNSTILE_ENABLED && (
-                <div className="sb-turnstile" ref={turnstileBoxRef} />
-              )}
+              <div className="sb-turnstile" ref={turnstileBoxRef} />
               <button
                 className="sb-btn sb-btn--primary sb-btn--block"
                 onClick={sendCode}
@@ -323,9 +320,7 @@ export function LoginPage() {
               >
                 {busy ? '提交中…' : '完成，进入共享白板'}
               </button>
-              {TURNSTILE_ENABLED && (
-                <div className="sb-turnstile" ref={turnstileBoxRef} />
-              )}
+              <div className="sb-turnstile" ref={turnstileBoxRef} />
               <div className="sb-login__foot">
                 <button className="sb-link" onClick={sendCode} disabled={busy || cooldown > 0}>
                   {cooldown > 0 ? `${cooldown} 秒后可重新发送` : '重新发送验证码'}
