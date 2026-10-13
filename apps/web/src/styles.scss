@@ -429,6 +429,14 @@ body {
     word-break: break-all;
 }
 
+/* 人机验证控件加载不出来时的提示（多半被广告拦截插件挡了） */
+.sb-login__hint--warn {
+    margin: -10px 0 16px;
+    color: var(--sb-danger);
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+}
+
 .sb-field {
     display: flex;
     flex-direction: column;

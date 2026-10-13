@@ -49,6 +49,8 @@ export function LoginPage() {
   const [cooldown, setCooldown] = useState(0);
   /** Turnstile 人机验证（token 一次性，用过即 reset 换新） */
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  /** 控件迟迟出不来 token：多半是广告拦截插件挡住了 challenges.cloudflare.com，给用户一条出路 */
+  const [turnstileStuck, setTurnstileStuck] = useState(false);
   const turnstileBoxRef = useRef<HTMLDivElement>(null);
   const turnstileWidgetRef = useRef<string | null>(null);
 
@@ -68,9 +70,15 @@ export function LoginPage() {
       if (!api) return;
       turnstileWidgetRef.current = api.render(turnstileBoxRef.current, {
         sitekey: TURNSTILE_SITEKEY,
-        callback: (token) => setTurnstileToken(token),
+        callback: (token) => {
+          setTurnstileToken(token);
+          setTurnstileStuck(false);
+        },
         'expired-callback': () => setTurnstileToken(null),
-        'error-callback': () => setTurnstileToken(null),
+        'error-callback': () => {
+          setTurnstileToken(null);
+          setTurnstileStuck(true);
+        },
       });
     };
     const existing = getTurnstile();
@@ -105,11 +113,19 @@ export function LoginPage() {
     return () => clearTimeout(timer);
   }, [cooldown]);
 
+  // 控件渲染后 12 秒还拿不到 token 就提示可能是被拦截了（error-callback 会更快触发）
+  useEffect(() => {
+    if (mode !== 'code' || step !== 'email' || turnstileToken) return;
+    const timer = setTimeout(() => setTurnstileStuck(true), 12000);
+    return () => clearTimeout(timer);
+  }, [mode, step, turnstileToken]);
+
   const switchMode = (next: 'password' | 'code') => {
     setMode(next);
     setStep('email');
     setCode('');
     setError(null);
+    setTurnstileStuck(false);
   };
 
   const sendCode = async () => {
@@ -255,6 +271,12 @@ export function LoginPage() {
                 打开对应地址的收件箱即可看到。
               </p>
               <div className="sb-turnstile" ref={turnstileBoxRef} />
+              {turnstileStuck && !turnstileToken && (
+                <p className="sb-login__hint sb-login__hint--warn">
+                  人机验证没出来？多半是广告拦截插件挡住了 challenges.cloudflare.com，
+                  临时关掉它或换个浏览器；也可以先用密码登录。
+                </p>
+              )}
               <button
                 className="sb-btn sb-btn--primary sb-btn--block"
                 onClick={sendCode}
